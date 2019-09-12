@@ -43,7 +43,8 @@ var argv = optimist
     .default('q', false)
     .default('t', true)
     .default('em', '')
-    .alias({ u: 'url', m: 'module-name', l: 'library', i: 'io', n: 'ngrx', d: 'driver', w: 'wipe', v: 'default-values', f: 'fireloop-only', q: 'quiet', t: 'typescript', em: 'exclude-models' })
+    .default('authmodel', '')
+    .alias({ u: 'url', m: 'module-name', l: 'library', i: 'io', n: 'ngrx', d: 'driver', w: 'wipe', v: 'default-values', f: 'fireloop-only', q: 'quiet', t: 'typescript', em: 'exclude-models', am: 'authmodel' })
     .demand(1)
     .argv;
 /**
@@ -108,7 +109,8 @@ var context = {
     fireloopOnly: argv['f'] || 'disabled',
     quiet: argv['q'] || false,
     isTyped: argv['t'] == 'false' ? false : true,
-    excludeModels: argv['em'] || ''
+    excludeModels: argv['em'] || '',
+    authModel: argv['authmodel'] || ''
 };
 
 if (context.quiet) {

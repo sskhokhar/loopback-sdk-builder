@@ -1,5 +1,7 @@
 /* tslint:disable */
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
+import { PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 export interface CookieInterface { [key: string]: any }
 /**
 * @author Jonathan Casarrubias <twitter:@johncasarrubias> <github:@mean-expert-official>
@@ -11,6 +13,7 @@ export interface CookieInterface { [key: string]: any }
 **/
 @Injectable()
 export class CookieBrowser {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
   /**
    * @type {CookieInterface}
    **/
@@ -24,14 +27,21 @@ export class CookieBrowser {
    **/
   get(key: string): any {
     if (!this.cookies[key]) {
-      let cookie = window.document
-                         .cookie.split('; ')
-                         .filter((item: any) => item.split('=')[0] === key).pop();
-      if (!cookie) {
-        return null;
+      if (isPlatformBrowser(this.platformId)) {
+        let cookie = window.document.cookie
+          .split('; ')
+          .filter((item: any) => item.split('=')[0] === key)
+          .pop();
+        if (!cookie) {
+          return null;
+        }
+        this.cookies[key] = this.parse(
+          cookie
+            .split('=')
+            .slice(1)
+            .join('=')
+        );
       }
-
-      this.cookies[key] = this.parse(cookie.split('=').slice(1).join('='));
     }
 
     return this.cookies[key];
@@ -47,8 +57,12 @@ export class CookieBrowser {
    **/
   set(key: string, value: any, expires?: Date): void {
     this.cookies[key] = value;
-    let cookie = `${key}=${encodeURI(value)}; path=/${expires ? `; expires=${ expires.toUTCString() }` : ''}`;
-    window.document.cookie = cookie;
+    let cookie = `${key}=${encodeURI(value)}; path=/${
+      expires ? `; expires=${expires.toUTCString()}` : ''
+    }`;
+    if (isPlatformBrowser(this.platformId)) {
+      window.document.cookie = cookie;
+    }
   }
   /**
    * @method remove
@@ -58,8 +72,11 @@ export class CookieBrowser {
    * This method will remove a cookie from the client.
    **/
   remove(key: string) {
-    document.cookie = key + '=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    delete this.cookies[key];
+    if (isPlatformBrowser(this.platformId)) {
+      document.cookie =
+        key + '=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      delete this.cookies[key];
+    }
   }
   /**
    * @method parse
